@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Networks: Application-Based Visual Notes</title>
+
+  <!-- Rough.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/roughjs@4.5.2/bundled/rough.js"></script>
+
+  <!-- KaTeX without dollar syntax -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #fdfbf7;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --success: #059669;
+      --danger: #dc2626;
+      --highlight: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 2.5rem 1.2rem;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.2rem;
+    }
+
+    h1 { font-size: 2rem; color: #111827; }
+    p.desc { color: var(--muted); font-size: 1rem; margin-top: 0.3rem; }
+
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .q-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .pill {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+    }
+    .pill-green { background: #ecfdf5; color: var(--success); }
+    .pill-blue { background: var(--accent-soft); color: var(--accent); }
+
+    .prompt-box {
+      background: #f9fafb;
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fbfbfb;
+      border: 1px solid #f3f4f6;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1.2rem 0;
+    }
+
+    canvas { max-width: 100%; display: block; }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button.interactive-btn {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button.interactive-btn:hover { border-color: var(--accent); color: var(--accent); }
+    button.interactive-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    button.interactive-btn.active-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    .theory-box {
+      font-size: 0.95rem;
+      color: #374151;
+      margin-top: 0.5rem;
+    }
+    .theory-box ul { margin-left: 1.2rem; }
+    .theory-box li { margin-bottom: 0.35rem; }
+
+    .app-box {
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #92400e;
+      margin-top: 0.8rem;
+    }
+
+  /* ---------------- Week Navigation & Sections ---------------- */
+  .week-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 1rem 0 2rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-nav a {
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--card);
+    transition: all 0.15s ease;
+  }
+  .week-nav a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .week-nav a.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .week-section {
+    margin-bottom: 3rem;
+  }
+  .week-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--accent);
+  }
+  .week-badge {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    padding: 0.22rem 0.7rem;
+    border-radius: 9999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .week-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .week-part {
+    margin-bottom: 1.5rem;
+  }
+  .part-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .practice .part-label { color: var(--success); }
+  .graded .part-label { color: var(--danger); }
+
+  .placeholder-card {
+    background: #f9fafb;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .placeholder-card h4 {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .placeholder-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Neural Networks: Visual & Application Notes</h1>
+    <p class="desc">Minimalist hand-drawn representations of fundamental neural computation concepts.</p>
+  </header>
+
+<nav class="week-nav">
+  <a href="#week-1" class="active">Week 1</a>
+  <a href="#week-2">Week 2</a>
+  <a href="#week-3">Week 3</a>
+  <a href="#week-4">Week 4</a>
+  <a href="#week-5">Week 5</a>
+  <a href="#week-6">Week 6</a>
+  <a href="#week-7">Week 7</a>
+  <a href="#week-8">Week 8</a>
+</nav>
+
+<section id="week-1" class="week-section">
+  <div class="week-header">
+    <span class="week-badge">Week 1</span>
+    <h2 class="week-title">Foundations of Neural Networks</h2>
+  </div>
+  <div class="week-part practice">
+    <span class="part-label">Practice Questions</span>
+  </div>
+
+  <!-- QUESTION 1 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 1: Biological Neuron Processing</span>
+      <span class="pill pill-green">Correct Answer: B. Soma</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> Which of the following components of a biological neuron is primarily responsible for processing information received from other neurons in the brain?
+      <br><br>
+      <strong>Options:</strong> A. Dendrites &nbsp;|&nbsp; B. Soma &nbsp;|&nbsp; C. Axon &nbsp;|&nbsp; D. Synapses
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">B. Soma</strong> <span style="color:var(--muted);">*(Note: The selection in your image shows Axon, which is incorrect)</span>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q1" width="560" height="150"></canvas>
+      <div class="controls">
+        <button class="interactive-btn" id="btn-fire-q1">⚡ Stimulate Synaptic Input</button>
+      </div>
+    </div>
+
+    <div class="section-label">Core Theory: Components of a Biological Neuron</div>
+    <div class="theory-box">
+      <ul>
+        <li><strong>Dendrites (Inputs):</strong> Receive chemical and electrical signals from neighboring neurons.</li>
+        <li><strong>Soma / Cell Body (Processor):</strong> Sums and processes incoming signals from dendrites. If the accumulated potential exceeds a certain threshold, it initiates an action potential (spikes/fires).</li>
+        <li><strong>Axon Hillock / Axon (Transmitter):</strong> Conducts the generated action potential away from the soma toward other neurons.</li>
+        <li><strong>Synapses (Connectors/Weights):</strong> The junction gaps where signals pass from one neuron's axon terminal to another's dendrite. Synaptic strengths correspond to weights \(w\) in artificial neural networks.</li>
+      </ul>
+    </div>
+
+    <div class="app-box">
+      <strong>Real-World Analogy (Edge Sensor Processor):</strong> Dendrites are the analog sensor pins, the <strong>Soma</strong> is the central microcontroller summing volt thresholds, and the Axon is the outgoing digital interrupt line.
+    </div>
+  </section>
+
+  <!-- QUESTION 2 & 3 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Questions 2 & 3: MP Neuron Threshold & Inhibitory Veto</span>
+      <span class="pill pill-green">Q2: \(\theta = 2\) | Q3: Inhibitory Veto</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> A user buys the phone (\(y = 1\)) if at least <strong>two</strong> specifications are present, but strictly rejects (\(y = 0\)) if it is <em>not made in India</em>. Find suitable threshold \(\theta\) and identify the inhibitory input.
+      <br><br>
+      <strong>Q2 Options:</strong> A. 1 &nbsp;|&nbsp; B. 0 &nbsp;|&nbsp; C. 2 &nbsp;|&nbsp; D. 3 &nbsp;|&nbsp; E. 4
+      <br><br>
+      <strong>Q2 Correct Answer:</strong> <strong style="color:var(--success);">C. \(\theta = 2\)</strong>
+      <br><br>
+      <strong>Q3 Options:</strong> A. Price &nbsp;|&nbsp; B. 5G support &nbsp;|&nbsp; C. not made in India &nbsp;|&nbsp; D. None of those
+      <br><br>
+      <strong>Q3 Correct Answer:</strong> <strong style="color:var(--success);">C. not made in India</strong>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q2" width="560" height="190"></canvas>
+      <div class="controls">
+        <button class="interactive-btn" id="btn-q2-f1" onclick="toggleQ2('f1')">5G Support: 0</button>
+        <button class="interactive-btn" id="btn-q2-f2" onclick="toggleQ2('f2')">Affordable Price: 0</button>
+        <button class="interactive-btn" id="btn-q2-f3" onclick="toggleQ2('f3')">OLED Display: 0</button>
+        <button class="interactive-btn" id="btn-q2-inh" onclick="toggleQ2('inh')">🚫 Not Made in India: 0</button>
+      </div>
+    </div>
+
+    <div class="section-label">Core Theory & Mathematical Formulation</div>
+    <div class="theory-box">
+      \[
+      y = \begin{cases} 
+      1 & \text{if } \sum_{i \in \text{excitatory}} x_i \ge 2 \quad \text{AND} \quad \text{inhibitory} = 0 \\ 
+      0 & \text{otherwise} 
+      \end{cases}
+      \]
+      <ul>
+        <li><strong>Threshold (\(\theta = 2\)):</strong> Encodes the "at least any two" logical criterion.</li>
+        <li><strong>Inhibitory Input (Veto):</strong> If <em>"not made in India"</em> \(= 1\), it activates the veto terminal, pulling the output down to \(0\) regardless of how large the excitatory sum is.</li>
+      </ul>
+    </div>
+
+    <div class="app-box">
+      <strong>Real-World Analogy (Credit Card Fraud Guard):</strong> Excitatory inputs = High transaction amount, unusual location, new device (requires \(\ge 2\) flags to approve manual check). Inhibitory input = "Card reported stolen" (instantly blocks transaction, no matter what).
+    </div>
+  </section>
+
+  <!-- QUESTION 4 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 4: Expressive Power without Inhibitory Inputs</span>
+      <span class="pill pill-green">Correct Answer: A. True</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> "All Boolean functions cannot be implemented using only excitatory inputs." Which of the following is correct?
+      <br><br>
+      <strong>Options:</strong> A. True — holds for some Boolean functions regardless of linear separability &nbsp;|&nbsp; B. True — holds for non-linearly separable Boolean functions &nbsp;|&nbsp; C. False — every Boolean function can be implemented without inhibitory inputs
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">A. True — it holds for some Boolean functions regardless of linear separability.</strong>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q4" width="560" height="140"></canvas>
+    </div>
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      <ul>
+        <li>An MP neuron with purely excitatory inputs is <strong>monotonically non-decreasing</strong>:
+          \[
+          \mathbf{x}_A \le \mathbf{x}_B \implies f(\mathbf{x}_A) \le f(\mathbf{x}_B)
+          \]
+        </li>
+        <li>Functions requiring negative logic (such as a single-input \(\text{NOT}\) gate, where \(x=0 \to 1\) and \(x=1 \to 0\)) are linearly separable, but <em>cannot</em> be modeled without an inhibitory mechanism.</li>
+        <li>Thus, the expressive limitation is not purely about linear separability; it fails even on separable, non-monotonic functions.</li>
+      </ul>
+    </div>
+
+    <div class="app-box">
+      <strong>Real-World Analogy (Safety Interlocks):</strong> An "Emergency Stop" button cannot be represented as an excitatory addition—adding an input pulse must <em>kill</em> the output, which requires negative/inhibitory weighting.
+    </div>
+  </section>
+
+  <!-- QUESTION 5 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 5: Hyperplane Touching a Hypercube Vertex</span>
+      <span class="pill pill-green">Correct: D. (0,0,0,0,0,0)</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> Inputs \(x \in \{0, 1\}^6\). Which input does the hyperplane \(x_1 + x_2 + x_3 + x_4 + x_5 + x_6 = 0\) touch?
+      <br><br>
+      <strong>Options:</strong> A. (0,0,0,0,1,0) &nbsp;|&nbsp; B. (0,0,0,0,0,1) &nbsp;|&nbsp; C. (0,1,1,0,0,1) &nbsp;|&nbsp; D. (0,0,0,0,0,0)
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">D. (0,0,0,0,0,0)</strong>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q5" width="460" height="150"></canvas>
+    </div>
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      <ul>
+        <li>For any binary hypercube \(\{0, 1\}^n\), coordinates are non-negative (\(x_i \ge 0\)).</li>
+        <li>The equation \(\sum_{i=1}^6 x_i = 0\) has only one non-negative solution:
+          \[
+          x_1 = x_2 = x_3 = x_4 = x_5 = x_6 = 0
+          \]
+        </li>
+        <li>Any other vertex contains at least one \(1\), yielding \(\sum x_i \ge 1 > 0\). Thus, the plane touches only the origin vertex.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- QUESTION 6 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 6: Linearly Separable Functions for \(n = 1\)</span>
+      <span class="pill pill-green">Correct: D. 4 Functions</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> How many linearly separable functions are there when \(n = 1\)?
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q6" width="560" height="150"></canvas>
+    </div>
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      <ul>
+        <li>Total possible Boolean functions for \(n\) variables is \(2^{2^n}\). For \(n=1\), \(2^{2^1} = 2^2 = 4\).</li>
+        <li>The four functions are:
+          1. Constant 0: \(f(0)=0, f(1)=0\)<br>
+          2. Identity: \(f(0)=0, f(1)=1\)<br>
+          3. Inversion (NOT): \(f(0)=1, f(1)=0\)<br>
+          4. Constant 1: \(f(0)=1, f(1)=1\)
+        </li>
+        <li>On a 1D line with only two points (\(x=0\) and \(x=1\)), a single cutoff point (threshold \(\theta\)) can isolate any combination. Thus, <strong>all 4 are linearly separable</strong>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- QUESTION 7 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 7: Regions Created by a Hyperplane in \(\mathbb{R}^5\)</span>
+      <span class="pill pill-green">Correct: A. 2 Regions</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> If the input vector \(\mathbf{x} \in \mathbb{R}^5\), into how many regions does the perceptron decision boundary divide the space?
+      <br><br>
+      <strong>Options:</strong> A. 2 &nbsp;|&nbsp; B. 3 &nbsp;|&nbsp; C. 5 &nbsp;|&nbsp; D. 4 &nbsp;|&nbsp; E. It depends...
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">A. 2</strong>
+    </div>
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      <ul>
+        <li>A single linear decision boundary is defined by \(\mathbf{w}^T\mathbf{x} + b = 0\).</li>
+        <li>A \((d-1)\)-dimensional hyperplane embedded in \(\mathbb{R}^d\) always partitions the entire space into exactly <strong>2 half-spaces</strong>:
+          \[
+          \mathcal{R}^+ = \{\mathbf{x} \mid \mathbf{w}^T\mathbf{x} + b > 0\}, \quad \mathcal{R}^- = \{\mathbf{x} \mid \mathbf{w}^T\mathbf{x} + b \le 0\}
+          \]
+        </li>
+        <li>This property holds true regardless of whether \(d = 2, 5,\) or \(1000\).</li>
+      </ul>
+    </div>
+
+    <div class="app-box">
+      <strong>Practical Implication:</strong> A single perceptron can never perform multi-category partitioning alone—it is fundamentally a binary bisection of space.
+    </div>
+  </section>
+
+  <!-- QUESTION 8 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 8: Perceptron Updates on OR (Zero Bias)</span>
+      <span class="pill pill-green">Correct: A. 0 Updates</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> Initial weights \(\mathbf{w} = [1, 1]^T\), decision rule: \(y = 1\) if \(\mathbf{w}^T\mathbf{x} > 0\) else \(0\). How many times does \(\mathbf{w}\) get updated on the OR dataset?
+      <br><br>
+      <strong>Options:</strong> A. 0 &nbsp;|&nbsp; B. 1 &nbsp;|&nbsp; C. 2 &nbsp;|&nbsp; D. 3 &nbsp;|&nbsp; E. Not possible to decide
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">A. 0</strong>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q8" width="460" height="180"></canvas>
+    </div>
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      The perceptron learning rule updates weights <em>only</em> upon misclassification (\(\hat{y} \ne y\)):
+      <ul>
+        <li>\(\mathbf{x} = [0, 0]^T \implies 1(0) + 1(0) = 0 \ngtr 0 \implies \hat{y} = 0\) (True \(y=0\) \(\to\) Correct)</li>
+        <li>\(\mathbf{x} = [0, 1]^T \implies 1(0) + 1(1) = 1 > 0 \implies \hat{y} = 1\) (True \(y=1\) \(\to\) Correct)</li>
+        <li>\(\mathbf{x} = [1, 0]^T \implies 1(1) + 1(0) = 1 > 0 \implies \hat{y} = 1\) (True \(y=1\) \(\to\) Correct)</li>
+        <li>\(\mathbf{x} = [1, 1]^T \implies 1(1) + 1(1) = 2 > 0 \implies \hat{y} = 1\) (True \(y=1\) \(\to\) Correct)</li>
+      </ul>
+      Zero misclassifications \(\implies\) <strong>0 updates required</strong>.
+    </div>
+  </section>
+
+  <!-- QUESTION 9 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 9: Perceptron Convergence on NAND (No Bias)</span>
+      <span class="pill pill-green">Correct: B. Never Converges</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> For NAND: \((0,0)\to 1, (0,1)\to 1, (1,0)\to 1, (1,1)\to 0\) with \(b = 0\), does the perceptron converge?
+      <br><br>
+      <strong>Options:</strong> A. The algorithm converges after some iterations &nbsp;|&nbsp; B. The algorithm never converges &nbsp;|&nbsp; C. The classification error becomes zero eventually &nbsp;|&nbsp; D. The classification error remains greater than zero
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">B. Never converges</strong> (select B if single-choice; D is also true)
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q9" width="460" height="190"></canvas>
+    </div>
+
+    <div class="section-label">Core Theory & Failure Mechanism</div>
+    <div class="theory-box">
+      <ul>
+        <li>Because \(b = 0\), the hyperplane \(\mathbf{w}^T\mathbf{x} = 0\) is anchored through the origin \((0,0)\).</li>
+        <li>Evaluating the origin: \(\mathbf{w}^T [0, 0]^T \equiv 0\), which can <em>never</em> satisfy the strict condition \(> 0\).</li>
+        <li>Thus, the point \((0,0)\) can never be assigned label \(1\), violating the NAND target.</li>
+        <li>By the <strong>Perceptron Convergence Theorem</strong>, linear separability is a strict requirement for termination; without bias, NAND is linearly inseparable \(\to\) the algorithm enters an infinite loop.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- QUESTION 10 -->
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question 10: Orthogonality of Weight Vector</span>
+      <span class="pill pill-green">Correct: A. True</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> "In the perceptron model, the weight vector \(\mathbf{w}\) is always orthogonal to the linear decision boundary."
+      <br><br>
+      <strong>Options:</strong> A. True &nbsp;|&nbsp; B. False
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">A. True</strong>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="cv-q10" width="500" height="200"></canvas>
+      <div class="controls">
+        <label style="font-size: 0.85rem; color: var(--muted);">Rotate Decision Plane:</label>
+        <input type="range" id="q10-slider" min="-45" max="45" value="15">
+      </div>
+    </div>
+
+    <div class="section-label">Mathematical Proof</div>
+    <div class="theory-box">
+      Let \(\mathbf{x}_1\) and \(\mathbf{x}_2\) be any two points lying on the decision boundary:
+      \[
+      \mathbf{w}^T\mathbf{x}_1 + b = 0 \quad \text{and} \quad \mathbf{w}^T\mathbf{x}_2 + b = 0
+      \]
+      Subtracting the two equations yields:
+      \[
+      \mathbf{w}^T(\mathbf{x}_1 - \mathbf{x}_2) = 0
+      \]
+      Since \((\mathbf{x}_1 - \mathbf{x}_2)\) is a vector parallel to the decision boundary, their dot product being zero confirms that \(\mathbf{w}\) is strictly <strong>orthogonal (normal)</strong> to the surface.
+    </div>
+  </section>
+  </section>
+
+  <!-- ==================== WEEKS 2–8 SCAFFOLD ==================== -->
+  <!-- Replace each placeholder-card below with your actual notes. -->
+
+  <section id="week-2" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 2</span>
+      <h2 class="week-title">Perceptron Learning Rule & Weight Updates</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 2 practice questions here (perceptron update steps, weight changes).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 2 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-3" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 3</span>
+      <h2 class="week-title">Linear Separability & the XOR Limitation</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 3 practice questions here (separable vs inseparable sets).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 3 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-4" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 4</span>
+      <h2 class="week-title">Multilayer Perceptrons & Backpropagation</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 4 practice questions here (hidden layers, chain rule).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 4 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-5" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 5</span>
+      <h2 class="week-title">Activation Functions & Loss Functions</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 5 practice questions here (sigmoid, tanh, ReLU, MSE, cross-entropy).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 5 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-6" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 6</span>
+      <h2 class="week-title">Optimization: Gradient Descent & Variants</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 6 practice questions here (SGD, momentum, learning rate).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 6 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-7" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 7</span>
+      <h2 class="week-title">Regularization & Generalization</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 7 practice questions here (L1/L2, dropout, train-val-test split).</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 7 graded questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="week-8" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 8</span>
+      <h2 class="week-title">Capstone Review & Integrated Practice</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <div class="placeholder-card">
+        <h4>Practice — coming soon</h4>
+        <p>Add Week 8 integrated practice questions here.</p>
+      </div>
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <div class="placeholder-card">
+        <h4>Graded — coming soon</h4>
+        <p>Add Week 8 graded/final questions here.</p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // KaTeX renderer execution
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: "\\[", right: "\\]", display: true},
+          {left: "\\(", right: "\\)", display: false}
+        ],
+        throwOnError: false
+      });
+
+      renderQ1(-1);
+      renderQ2();
+      renderQ4();
+      renderQ5();
+      renderQ6();
+      renderQ8();
+      renderQ9();
+      renderQ10(15);
+    });
+
+    // ----------------------------------------------------------------
+    // Q1: Biological Neuron Processing
+    // ----------------------------------------------------------------
+    let q1Anim = null;
+    function renderQ1(t) {
+      const cv = document.getElementById("cv-q1");
+      const ctx = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+
+      // Dendrites
+      rc.line(40, 40, 150, 75, { stroke: '#9ca3af', strokeWidth: 2 });
+      rc.line(40, 75, 150, 75, { stroke: '#9ca3af', strokeWidth: 2 });
+      rc.line(40, 110, 150, 75, { stroke: '#9ca3af', strokeWidth: 2 });
+
+      // Soma (Processor)
+      rc.circle(190, 75, 65, { fill: '#dbeafe', stroke: '#2563eb', strokeWidth: 2, fillWeight: 1.2 });
+
+      // Axon
+      rc.line(225, 75, 420, 75, { stroke: '#4b5563', strokeWidth: 3 });
+
+      // Synaptic ends
+      rc.line(420, 75, 500, 45, { stroke: '#9ca3af', strokeWidth: 2 });
+      rc.line(420, 75, 500, 105, { stroke: '#9ca3af', strokeWidth: 2 });
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Dendrites (Inputs)", 85, 25);
+      ctx.fillText("Soma (Processor)", 190, 80);
+      ctx.fillText("Axon (Transmitter)", 320, 65);
+      ctx.fillText("Synapses", 500, 25);
+
+      if (t >= 0 && t <= 1) {
+        let x, y;
+        if (t < 0.35) {
+          x = 40 + (t / 0.35) * (190 - 40);
+          y = 75;
+        } else if (t < 0.65) {
+          x = 190;
+          y = 75;
+          ctx.beginPath();
+          ctx.arc(190, 75, 34 + 6 * Math.sin((t - 0.35) / 0.3 * Math.PI), 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(37, 99, 235, 0.3)";
+          ctx.fill();
+        } else {
+          x = 225 + ((t - 0.65) / 0.35) * (500 - 225);
+          y = 75;
+        }
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#f59e0b";
+        ctx.fill();
+      }
+    }
+
+    document.getElementById("btn-fire-q1").addEventListener("click", () => {
+      let start = null;
+      cancelAnimationFrame(q1Anim);
+      function step(ts) {
+        if (!start) start = ts;
+        let progress = (ts - start) / 1000;
+        if (progress <= 1) {
+          renderQ1(progress);
+          q1Anim = requestAnimationFrame(step);
+        } else {
+          renderQ1(-1);
+        }
+      }
+      q1Anim = requestAnimationFrame(step);
+    });
+
+    // ----------------------------------------------------------------
+    // Q2: MP Neuron Interactive Circuit
+    // ----------------------------------------------------------------
+    const q2State = { f1: 0, f2: 0, f3: 0, inh: 0 };
+    function toggleQ2(k) {
+      q2State[k] = q2State[k] ? 0 : 1;
+      const b = document.getElementById(k === 'inh' ? 'btn-q2-inh' : `btn-q2-${k}`);
+      if (k === 'inh') {
+        b.className = q2State[k] ? 'interactive-btn active-danger' : 'interactive-btn';
+        b.innerText = `🚫 Not Made in India: ${q2State[k]}`;
+      } else {
+        b.className = q2State[k] ? 'interactive-btn active' : 'interactive-btn';
+        const labels = { f1: '5G Support', f2: 'Affordable Price', f3: 'OLED Display' };
+        b.innerText = `${labels[k]}: ${q2State[k]}`;
+      }
+      renderQ2();
+    }
+
+    function renderQ2() {
+      const cv = document.getElementById("cv-q2");
+      const ctx = cv.getContext;
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+      c.clearRect(0, 0, cv.width, cv.height);
+
+      const sum = q2State.f1 + q2State.f2 + q2State.f3;
+      const active = sum >= 2 && q2State.inh === 0;
+
+      // Input lines
+      const items = [
+        { y: 40, v: q2State.f1, name: '5G' },
+        { y: 85, v: q2State.f2, name: 'Price' },
+        { y: 130, v: q2State.f3, name: 'OLED' }
+      ];
+
+      items.forEach(it => {
+        rc.line(80, it.y, 240, 95, { stroke: it.v ? '#059669' : '#d1d5db', strokeWidth: it.v ? 2.5 : 1.5 });
+        c.fillStyle = it.v ? '#059669' : '#6b7280';
+        c.font = "bold 11px sans-serif";
+        c.textAlign = "right";
+        c.fillText(`${it.name} (${it.v})`, 70, it.y + 4);
+      });
+
+      // Inhibitory terminal
+      rc.line(260, 175, 260, 135, { stroke: q2State.inh ? '#dc2626' : '#d1d5db', strokeWidth: q2State.inh ? 3 : 1.5 });
+      rc.circle(260, 135, 10, { fill: q2State.inh ? '#dc2626' : '#fff', stroke: '#dc2626', strokeWidth: 2 });
+      c.fillStyle = q2State.inh ? '#dc2626' : '#6b7280';
+      c.font = "11px sans-serif";
+      c.textAlign = "center";
+      c.fillText(`Veto = ${q2State.inh}`, 260, 186);
+
+      // Soma Circle
+      rc.circle(260, 95, 65, {
+        fill: active ? '#d1fae5' : (q2State.inh ? '#fee2e2' : '#f3f4f6'),
+        stroke: active ? '#059669' : (q2State.inh ? '#dc2626' : '#9ca3af'),
+        strokeWidth: 2
+      });
+
+      c.fillStyle = "#111827";
+      c.font = "12px sans-serif";
+      c.textAlign = "center";
+      c.fillText(`Σ = ${sum}`, 260, 90);
+      c.fillText(`θ = 2`, 260, 106);
+
+      // Output line
+      rc.line(295, 95, 450, 95, { stroke: active ? '#059669' : '#9ca3af', strokeWidth: active ? 3 : 2 });
+      c.fillStyle = active ? '#059669' : '#dc2626';
+      c.font = "bold 13px sans-serif";
+      c.textAlign = "left";
+      c.fillText(active ? "y = 1 (BUY)" : "y = 0 (REJECT)", 460, 99);
+    }
+
+    // ----------------------------------------------------------------
+    // Q4: Monotonic vs Non-Monotonic Step
+    // ----------------------------------------------------------------
+    function renderQ4() {
+      const cv = document.getElementById("cv-q4");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+
+      // Left: Excitatory only (monotonic)
+      rc.line(60, 110, 240, 110, { stroke: '#9ca3af' });
+      rc.line(60, 110, 60, 30, { stroke: '#9ca3af' });
+      rc.line(60, 100, 140, 100, { stroke: '#2563eb', strokeWidth: 2.5 });
+      rc.line(140, 100, 140, 45, { stroke: '#2563eb', strokeWidth: 2.5 });
+      rc.line(140, 45, 230, 45, { stroke: '#2563eb', strokeWidth: 2.5 });
+
+      c.fillStyle = "#111827";
+      c.font = "11px sans-serif";
+      c.textAlign = "center";
+      c.fillText("Excitatory Only (Monotonic: 0 → 1)", 150, 20);
+
+      // Right: NOT function (non-monotonic)
+      rc.line(320, 110, 500, 110, { stroke: '#9ca3af' });
+      rc.line(320, 110, 320, 30, { stroke: '#9ca3af' });
+      rc.line(320, 45, 400, 45, { stroke: '#dc2626', strokeWidth: 2.5 });
+      rc.line(400, 45, 400, 100, { stroke: '#dc2626', strokeWidth: 2.5 });
+      rc.line(400, 100, 490, 100, { stroke: '#dc2626', strokeWidth: 2.5 });
+
+      c.fillText("NOT Logic (Non-Monotonic: 1 → 0)", 410, 20);
+    }
+
+    // ----------------------------------------------------------------
+    // Q5: Hypercube Origin Touch
+    // ----------------------------------------------------------------
+    function renderQ5() {
+      const cv = document.getElementById("cv-q5");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+
+      // Projection of hypercube axes
+      rc.line(180, 100, 300, 100, { stroke: '#9ca3af' });
+      rc.line(180, 100, 180, 20, { stroke: '#9ca3af' });
+      rc.line(180, 100, 100, 135, { stroke: '#9ca3af' });
+
+      // Origin Point
+      rc.circle(180, 100, 12, { fill: '#dc2626', stroke: '#dc2626', fillWeight: 2 });
+      c.fillStyle = "#dc2626";
+      c.font = "bold 12px sans-serif";
+      c.textAlign = "left";
+      c.fillText("(0, 0, 0, 0, 0, 0)", 195, 115);
+
+      // Hyperplane line passing directly through origin
+      rc.line(80, 140, 280, 60, { stroke: '#2563eb', strokeWidth: 2 });
+      c.fillStyle = "#2563eb";
+      c.font = "11px sans-serif";
+      c.fillText("Hyperplane: Σ xᵢ = 0", 250, 50);
+    }
+
+    // ----------------------------------------------------------------
+    // Q6: Linearly Separable n=1
+    // ----------------------------------------------------------------
+    function renderQ6() {
+      const cv = document.getElementById("cv-q6");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+
+      const cx = 80;
+      rc.line(cx, 80, cx + 400, 80, { stroke: '#64748b', strokeWidth: 2 });
+
+      // Point 0 and Point 1
+      rc.circle(cx + 80, 80, 14, { fill: '#3b82f6', stroke: '#3b82f6', fillWeight: 2 });
+      rc.circle(cx + 320, 80, 14, { fill: '#10b981', stroke: '#10b981', fillWeight: 2 });
+
+      c.fillStyle = "#111827";
+      c.font = "12px sans-serif";
+      c.textAlign = "center";
+      c.fillText("x = 0", cx + 80, 115);
+      c.fillText("x = 1", cx + 320, 115);
+
+      // Threshold cut point
+      rc.line(cx + 200, 45, cx + 200, 115, { stroke: '#ef4444', strokeWidth: 2, strokeLineDash: [4, 4] });
+      c.fillStyle = "#ef4444";
+      c.fillText("Threshold θ", cx + 200, 35);
+    }
+
+    // ----------------------------------------------------------------
+    // Q8: OR Gate Point Separation (Zero Updates)
+    // ----------------------------------------------------------------
+    function renderQ8() {
+      const cv = document.getElementById("cv-q8");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+
+      const ox = 140, oy = 140, scale = 75;
+
+      // Axes
+      rc.line(ox, oy, ox + 150, oy, { stroke: '#94a3b8' });
+      rc.line(ox, oy, ox, oy - 120, { stroke: '#94a3b8' });
+
+      // Decision boundary: x1 + x2 = 0 passing through origin
+      rc.line(ox - 35, oy + 35, ox + 120, oy - 120, { stroke: '#2563eb', strokeWidth: 2 });
+
+      const pts = [
+        { x: 0, y: 0, col: '#475569', label: '(0,0) → 0' },
+        { x: 0, y: 1, col: '#059669', label: '(0,1) → 1' },
+        { x: 1, y: 0, col: '#059669', label: '(1,0) → 1' },
+        { x: 1, y: 1, col: '#059669', label: '(1,1) → 1' }
+      ];
+
+      pts.forEach(p => {
+        const px = ox + p.x * scale;
+        const py = oy - p.y * scale;
+        rc.circle(px, py, 10, { fill: p.col, stroke: p.col, fillWeight: 2 });
+        c.fillStyle = "#111827";
+        c.font = "10px sans-serif";
+        c.textAlign = "center";
+        c.fillText(p.label, px, py - 10);
+      });
+
+      c.fillStyle = "#2563eb";
+      c.font = "10px sans-serif";
+      c.fillText("wᵀx > 0 Region", ox + 120, oy - 60);
+    }
+
+    // ----------------------------------------------------------------
+    // Q9: NAND Failure Without Bias
+    // ----------------------------------------------------------------
+    function renderQ9() {
+      const cv = document.getElementById("cv-q9");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+
+      const ox = 140, oy = 150, scale = 75;
+      rc.line(ox, oy, ox + 150, oy, { stroke: '#94a3b8' });
+      rc.line(ox, oy, ox, oy - 120, { stroke: '#94a3b8' });
+
+      // Line forced through origin
+      rc.line(ox - 30, oy + 30, ox + 130, oy - 130, { stroke: '#dc2626', strokeWidth: 2, strokeLineDash: [4, 4] });
+
+      const pts = [
+        { x: 0, y: 0, col: '#059669', label: '(0,0) Target=1' },
+        { x: 0, y: 1, col: '#059669', label: '(0,1) Target=1' },
+        { x: 1, y: 0, col: '#059669', label: '(1,0) Target=1' },
+        { x: 1, y: 1, col: '#dc2626', label: '(1,1) Target=0' }
+      ];
+
+      pts.forEach(p => {
+        const px = ox + p.x * scale;
+        const py = oy - p.y * scale;
+        rc.circle(px, py, 10, { fill: p.col, stroke: p.col, fillWeight: 2 });
+        c.fillStyle = "#111827";
+        c.font = "10px sans-serif";
+        c.textAlign = "center";
+        c.fillText(p.label, px, py + (p.x === 0 && p.y === 0 ? 18 : -10));
+      });
+
+      c.fillStyle = "#dc2626";
+      c.font = "bold 11px sans-serif";
+      c.fillText("Origin trapped on boundary: wᵀ[0,0] = 0 (Never > 0)", ox + 150, oy + 25);
+    }
+
+    // ----------------------------------------------------------------
+    // Q10: Orthogonal Weight Vector
+    // ----------------------------------------------------------------
+    document.getElementById("q10-slider").addEventListener("input", (e) => {
+      renderQ10(parseFloat(e.target.value));
+    });
+
+    function renderQ10(deg) {
+      const cv = document.getElementById("cv-q10");
+      const c = cv.getContext("2d");
+      const rc = rough.canvas(cv);
+      c.clearRect(0, 0, cv.width, cv.height);
+
+      const cx = 250, cy = 100;
+      const rad = (deg * Math.PI) / 180;
+      const dx = Math.cos(rad), dy = Math.sin(rad);
+      const nx = -dy, ny = dx;
+
+      // Hyperplane
+      rc.line(cx - dx * 160, cy - dy * 160, cx + dx * 160, cy + dy * 160, { stroke: '#2563eb', strokeWidth: 2.5 });
+
+      // Vector w
+      const len = 70;
+      rc.line(cx, cy, cx + nx * len, cy + ny * len, { stroke: '#dc2626', strokeWidth: 3 });
+
+      // Right angle indicator
+      const s = 12;
+      rc.line(cx + dx * s, cy + dy * s, cx + dx * s + nx * s, cy + dy * s + ny * s, { stroke: '#6b7280' });
+      rc.line(cx + dx * s + nx * s, cy + dy * s + ny * s, cx + nx * s, cy + ny * s, { stroke: '#6b7280' });
+
+      c.fillStyle = "#2563eb";
+      c.font = "12px sans-serif";
+      c.textAlign = "center";
+      c.fillText("Boundary: wᵀx + b = 0", cx - dx * 80, cy - dy * 80 - 15);
+
+      c.fillStyle = "#dc2626";
+      c.font = "bold 12px sans-serif";
+      c.fillText("w (Normal)", cx + nx * (len + 15), cy + ny * (len + 15));
+    }
+
+    // ------------------------------------------------------------------
+    // EASY NOTE ADDER — use this to add new questions without editing HTML
+    // ------------------------------------------------------------------
+    // Example:
+    // addQuestion("week-2", {
+    //   part: "practice",          // "practice" or "graded"
+    //   title: "My New Question",
+    //   pill: "Correct Answer: A",
+    //   question: "What is ...?",
+    //   options: "A. ... | B. ... | C. ... | D. ...",
+    //   correct: "A. ...",
+    //   theory: [                  // array of bullet strings (HTML allowed)
+    //     "<strong>Point 1:</strong> explanation",
+    //     "<strong>Point 2:</strong> explanation"
+    //   ],
+    //   analogy: "Real-world analogy text (optional)",
+    //   canvas: false              // set true to include an empty canvas container
+    // });
+    function addQuestion(weekId, q) {
+      const week = document.getElementById(weekId);
+      if (!week) {
+        console.error("Week section not found:", weekId);
+        return;
+      }
+
+      const partDiv = week.querySelector(".week-part." + q.part);
+      if (!partDiv) {
+        console.error("Part not found:", q.part, "in", weekId);
+        return;
+      }
+
+      const card = document.createElement("section");
+      card.className = "q-card";
+
+      let canvasHtml = "";
+      if (q.canvas) {
+        canvasHtml = `
+          <div class="canvas-container">
+            <canvas width="560" height="150"></canvas>
+          </div>`;
+      }
+
+      let theoryHtml = "";
+      if (q.theory && q.theory.length) {
+        const items = q.theory.map(t => "<li>" + t + "</li>").join("");
+        theoryHtml = `
+          <div class="section-label">Core Theory</div>
+          <div class="theory-box"><ul>${items}</ul></div>`;
+      }
+
+      let analogyHtml = "";
+      if (q.analogy) {
+        analogyHtml = `<div class="app-box"><strong>Real-World Analogy:</strong> ${q.analogy}</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="q-title">
+          <span>${q.title}</span>
+          <span class="pill pill-green">${q.pill}</span>
+        </div>
+        <div class="prompt-box">
+          <strong>Question:</strong> ${q.question}
+          ${q.options ? "<br><br><strong>Options:</strong> " + q.options : ""}
+          ${q.correct ? "<br><br><strong>Correct Answer:</strong> <strong style='color:var(--success);'>" + q.correct + "</strong>" : ""}
+        </div>
+        ${canvasHtml}
+        ${theoryHtml}
+        ${analogyHtml}
+      `;
+
+      partDiv.appendChild(card);
+    }
+
+  </script>
+
+  <!-- ========================================================================
+       COPY-PASTE TEMPLATES — delete this comment block when you're done
+       ======================================================================== -->
+
+  <!-- TEMPLATE: A single practice or graded question card
+       Paste this inside the <div class="week-part practice"> or
+       <div class="week-part graded"> of any week section.
+       ======================================================================== -->
+  <!--
+  <section class="q-card">
+    <div class="q-title">
+      <span>Question N: Your Title Here</span>
+      <span class="pill pill-green">Correct Answer: X. Your Answer</span>
+    </div>
+    <div class="prompt-box">
+      <strong>Question:</strong> Write your question here.
+      <br><br>
+      <strong>Options:</strong> A. Option 1 &nbsp;|&nbsp; B. Option 2 &nbsp;|&nbsp; C. Option 3 &nbsp;|&nbsp; D. Option 4
+      <br><br>
+      <strong>Correct Answer:</strong> <strong style="color:var(--success);">X. Your Answer</strong>
+    </div>
+
+    <!-- Optional canvas for diagrams -->
+    <!--
+    <div class="canvas-container">
+      <canvas id="cv-custom" width="560" height="150"></canvas>
+    </div>
+    -->
+
+    <div class="section-label">Core Theory</div>
+    <div class="theory-box">
+      <ul>
+        <li><strong>Key point 1:</strong> Explanation here.</li>
+        <li><strong>Key point 2:</strong> Explanation here.</li>
+      </ul>
+    </div>
+
+    <div class="app-box">
+      <strong>Real-World Analogy:</strong> One sentence analogy to help remember it.
+    </div>
+  </section>
+  -->
+
+  <!-- TEMPLATE: A full week section (copy for Week 2, 3, ... 8)
+       Paste this before the <script> tag. Change the id="week-X" and title.
+       ======================================================================== -->
+  <!--
+  <section id="week-2" class="week-section">
+    <div class="week-header">
+      <span class="week-badge">Week 2</span>
+      <h2 class="week-title">Your Week Title Here</h2>
+    </div>
+    <div class="week-part practice">
+      <span class="part-label">Practice Questions</span>
+      <!-- paste question cards here -->
+    </div>
+    <div class="week-part graded">
+      <span class="part-label">Graded Questions</span>
+      <!-- paste question cards here -->
+    </div>
+  </section>
+  -->
+
+</body>
+</html>

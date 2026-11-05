@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Networks & Perceptron Fundamentals: Complete Solutions & First Principles</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rough.js/3.1.0/rough.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a1128;
+      --bg-secondary: #101f42;
+      --bg-card: #162a5a;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #f43f5e;
+      --border-color: #1e3a8a;
+      --code-bg: #0d1b3e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .q-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .q-badge {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--accent-amber);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .q-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: #f8fafc;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .option-item {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.98rem;
+    }
+
+    .option-item.correct {
+      border-color: var(--accent-emerald);
+      background-color: rgba(52, 211, 153, 0.12);
+    }
+
+    .option-item.incorrect-marked {
+      border-color: var(--accent-rose);
+      background-color: rgba(244, 63, 94, 0.12);
+    }
+
+    .opt-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .option-item.correct .opt-letter {
+      background-color: var(--accent-emerald);
+      color: #064e3b;
+      border-color: var(--accent-emerald);
+    }
+
+    .option-item.incorrect-marked .opt-letter {
+      background-color: var(--accent-rose);
+      color: #fff;
+      border-color: var(--accent-rose);
+    }
+
+    .solution-box {
+      background-color: var(--code-bg);
+      border-left: 4px solid var(--accent-cyan);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin-top: 1.5rem;
+    }
+
+    .solution-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-cyan);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .math-block {
+      background-color: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.75rem 1.25rem;
+      margin: 0.85rem 0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 1.05rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      max-width: 320px;
+      margin: 1rem 0;
+      border-collapse: collapse;
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+    }
+
+    .data-table th, .data-table td {
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 0.8rem;
+    }
+
+    .data-table th {
+      background-color: var(--bg-card);
+      color: var(--accent-cyan);
+    }
+
+    .canvas-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 1.5rem 0;
+      background: #080f24;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    canvas {
+      background-color: transparent;
+      max-width: 100%;
+    }
+
+    .canvas-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    /* Master Guide Section */
+    .master-guide {
+      background-color: var(--bg-secondary);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      margin-top: 3.5rem;
+    }
+
+    .master-guide h2 {
+      font-size: 1.8rem;
+      color: var(--accent-cyan);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .master-guide h3 {
+      font-size: 1.3rem;
+      color: var(--accent-amber);
+      margin: 1.75rem 0 0.75rem 0;
+    }
+
+    .master-guide p {
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+
+    .master-guide ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .master-guide li {
+      margin-bottom: 0.5rem;
+    }
+
+    .tag-correct {
+      color: var(--accent-emerald);
+      font-weight: 700;
+    }
+
+    .tag-wrong {
+      color: var(--accent-rose);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- QUESTION 1 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 1</span>
+      <span class="q-badge">Biological Neuron</span>
+    </div>
+    <div class="q-text">
+      Which of the following components of a biological neuron is primarily responsible for processing information received from other neurons in the brain?
+    </div>
+    <div class="options-grid">
+      <div class="option-item">
+        <span class="opt-letter">A</span>
+        <span>Dendrites</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">B</span>
+        <span><b>Soma</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item incorrect-marked">
+        <span class="opt-letter">C</span>
+        <span>Axon &nbsp;<span class="tag-wrong">[INCORRECTLY MARKED IN PROMPT]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">D</span>
+        <span>Synapses</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>A biological neuron has four primary structural regions, each corresponding directly to computational blocks in artificial intelligence:</p>
+      <ul>
+        <li><b>Dendrites (Input Receivers):</b> Branch-like projections that receive chemical messages (neurotransmitters) across synaptic clefts and convert them into graded post-synaptic electrical potentials (EPSPs and IPSPs).</li>
+        <li><b>Soma / Cell Body (Central Processing Unit):</b> The metabolic center containing the nucleus. Critically, the soma performs <b>spatial and temporal summation</b> (algebraic aggregation and integration) of all incoming excitatory and inhibitory graded potentials. The soma and its axon hillock decide whether the net integrated membrane potential crosses the excitation threshold. Hence, it is the primary site of <b>information processing</b>.</li>
+        <li><b>Axon (Transmission Line):</b> A long, slender cylindrical projection (often myelinated) responsible for <b>conducting / propagating</b> the generated all-or-none action potential <i>away</i> from the cell body toward downstream cells. It does not process; it transmits.</li>
+        <li><b>Synapses (Junctions / Weights):</b> The structural interfaces between neurons where neurochemical signal transmission occurs, providing adjustable transmission efficacy (analogous to synaptic weights <b>w</b><sub>i</sub>).</li>
+      </ul>
+      <p><b>Conclusion:</b> The biological component responsible for <i>processing</i> (aggregating and deciding) is the <b>Soma (Option B)</b>.</p>
+    </div>
+    <div class="canvas-container">
+      <canvas id="cv-neuron" width="700" height="260"></canvas>
+      <div class="canvas-caption">Figure 1.1: Functional mapping between biological components and artificial neuron layers.</div>
+    </div>
+  </div>
+
+  <!-- QUESTION 3 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 3 / 10</span>
+      <span class="q-badge">McCulloch-Pitts Neuron</span>
+    </div>
+    <div class="q-text">
+      In question 2, Which of the specifications listed in the table is an inhibitory input to the MP neuron?
+    </div>
+    <div class="options-grid">
+      <div class="option-item">
+        <span class="opt-letter">A</span>
+        <span>Price</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>5G support</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">C</span>
+        <span><b>not made in India</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">D</span>
+        <span>None of those</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>In the classic McCulloch-Pitts (MP) neuron model introduced by Warren McCulloch and Walter Pitts (1943):</p>
+      <ul>
+        <li>Inputs are strictly binary: <i>x</i><sub>i</sub> &in; {0, 1}.</li>
+        <li>Inputs are divided into two disjoint sets: <b>excitatory inputs</b> (which contribute +1 toward reaching an activation threshold &theta;) and <b>inhibitory inputs</b>.</li>
+        <li>Inhibitory inputs possess absolute <b>veto power</b>: if even a single inhibitory input is active (equal to 1), the neuron is unconditionally silenced (output <i>y</i> = 0), regardless of how high the sum of excitatory inputs is!</li>
+      </ul>
+      <div class="math-block">
+        y = 0 &nbsp;&nbsp; if any inhibitory input equals 1<br>
+        y = 1 &nbsp;&nbsp; if all inhibitory inputs equal 0 AND &Sigma; x<sub>i</sub> &ge; &theta;
+      </div>
+      <p>In the standard phone-purchase decision problem (introduced in NPTEL Deep Learning):</p>
+      <ul>
+        <li>Features like <i>5G support</i>, <i>high RAM</i>, and <i>good camera</i> are desirable features that add positive evidence towards buying (<b>excitatory</b>).</li>
+        <li>The feature <b>"not made in India"</b> serves as an absolute deal-breaker (veto): if a phone is not made in India (value = 1), the buyer will <b>never</b> purchase it under any condition (output forced to 0).</li>
+      </ul>
+      <p>Thus, <b>not made in India</b> is the inhibitory input <b>(Option C)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 4 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 4 / 10</span>
+      <span class="q-badge">Boolean Functions & Inhibition</span>
+    </div>
+    <div class="q-text">
+      Consider the statement: "All Boolean functions cannot be implemented using only excitatory inputs (i.e., without inhibitory inputs)." Which of the following is correct?
+    </div>
+    <div class="options-grid">
+      <div class="option-item correct">
+        <span class="opt-letter">A</span>
+        <span><b>True &mdash; it holds for some Boolean functions regardless of linear separability.</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>True &mdash; it holds for non-linearly separable Boolean functions.</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>False &mdash; every Boolean function can be implemented without inhibitory inputs.</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>The phrasing "All Boolean functions cannot be implemented using only excitatory inputs" means: <i>Not all Boolean functions can be implemented using only excitatory inputs.</i> Let us examine the expressive power of an MP neuron with excitatory inputs alone:</p>
+      <div class="math-block">
+        y = 1 &nbsp;&nbsp; if &sum;<sub>i=1</sub><sup>n</sup> x<sub>i</sub> &ge; &theta;, &nbsp;&nbsp; else 0
+      </div>
+      <p>Notice that the mapping <i>f</i>(<b>x</b>) defined above is strictly <b>monotonically non-decreasing</b>: flipping any input variable from 0 to 1 can only increase (or leave unchanged) the sum &sum; <i>x</i><sub>i</sub>, never decrease it. Therefore, an MP neuron with only excitatory inputs can <b>only</b> implement <i>monotone positive</i> Boolean functions.</p>
+      <p>Consider the elementary <b>NOT</b> gate: <i>f</i>(0) = 1, <i>f</i>(1) = 0.</p>
+      <ul>
+        <li>Is the NOT function linearly separable? <b>Yes!</b> A threshold at 0.5 separates 0 from 1 in 1D.</li>
+        <li>Can it be implemented with an excitatory-only MP neuron? <b>No!</b> If <i>f</i>(0) = 1, then the threshold &theta; &le; 0, which forces <i>f</i>(1) = 1 (contradiction). The NOT function strictly requires an <b>inhibitory</b> input.</li>
+        <li>Similarly, <i>f</i>(<i>x</i><sub>1</sub>, <i>x</i><sub>2</sub>) = <i>x</i><sub>1</sub> &and; &not;<i>x</i><sub>2</sub> is linearly separable, yet it cannot be implemented without an inhibitory input.</li>
+      </ul>
+      <p>Thus, inhibitory inputs are required not merely for non-linearly separable functions, but for <b>any function exhibiting negative dependence</b>, including simple linearly separable ones. Hence, the limitation holds for some Boolean functions <b>regardless of linear separability</b> <b>(Option A)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 5 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 5 / 10</span>
+      <span class="q-badge">Hypercube Geometry</span>
+    </div>
+    <div class="q-text">
+      Suppose that we represent inputs <b>x</b> &in; {0, 1}<sup>6</sup> of a Boolean function as vertices of a hypercube in 6 dimensional space. Then the hyperplane defined by <i>x</i><sub>1</sub> + <i>x</i><sub>2</sub> + <i>x</i><sub>3</sub> + <i>x</i><sub>4</sub> + <i>x</i><sub>5</sub> + <i>x</i><sub>6</sub> = 0 only touches which of the following input?
+    </div>
+    <div class="options-grid">
+      <div class="option-item">
+        <span class="opt-letter">A</span>
+        <span>(0,0,0,0,1,0)</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>(0,0,0,0,0,1)</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>(0,1,1,0,0,1)</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">D</span>
+        <span><b>(0,0,0,0,0,0)</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>The vertex space of the 6-dimensional Boolean hypercube consists of points <b>x</b> = (<i>x</i><sub>1</sub>, <i>x</i><sub>2</sub>, <i>x</i><sub>3</sub>, <i>x</i><sub>4</sub>, <i>x</i><sub>5</sub>, <i>x</i><sub>6</sub>) where each coordinate <i>x</i><sub>i</sub> &in; {0, 1}.</p>
+      <p>Notice that for all <i>i</i> &in; {1, 2, ..., 6}, we have the non-negativity constraint:</p>
+      <div class="math-block">
+        x<sub>i</sub> &ge; 0 &nbsp;&nbsp; &forall; i
+      </div>
+      <p>We are given the hyperplane equation:</p>
+      <div class="math-block">
+        &sum;<sub>i=1</sub><sup>6</sup> x<sub>i</sub> = 0
+      </div>
+      <p>The sum of non-negative real numbers is zero <b>if and only if</b> every individual term in the summation is identically zero:</p>
+      <div class="math-block">
+        &sum;<sub>i=1</sub><sup>6</sup> x<sub>i</sub> = 0 &nbsp;&iff;&nbsp; x<sub>1</sub> = x<sub>2</sub> = x<sub>3</sub> = x<sub>4</sub> = x<sub>5</sub> = x<sub>6</sub> = 0
+      </div>
+      <p>Testing the candidate options:</p>
+      <ul>
+        <li>For (0,0,0,0,1,0): sum = 1 &ne; 0.</li>
+        <li>For (0,0,0,0,0,1): sum = 1 &ne; 0.</li>
+        <li>For (0,1,1,0,0,1): sum = 3 &ne; 0.</li>
+        <li>For <b>(0,0,0,0,0,0)</b>: sum = 0 + 0 + 0 + 0 + 0 + 0 = 0.</li>
+      </ul>
+      <p>The hyperplane is tangent to the hypercube at its bottom-most vertex, the origin <b>(0,0,0,0,0,0)</b> <b>(Option D)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 6 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 6 / 10</span>
+      <span class="q-badge">Separability in 1D</span>
+    </div>
+    <div class="q-text">
+      We know that a Boolean function maps {0, 1}<sup>n</sup> &rarr; {0, 1}. How many linearly separable functions are there when <i>n</i> = 1?
+    </div>
+    <div class="options-grid">
+      <div class="option-item">
+        <span class="opt-letter">A</span>
+        <span>0</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>1</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>2</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">D</span>
+        <span><b>4</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>For any <i>n</i>, the total number of distinct Boolean functions is given by:</p>
+      <div class="math-block">
+        N<sub>total</sub> = 2<sup>(2<sup>n</sup>)</sup>
+      </div>
+      <p>For <i>n</i> = 1, the domain has 2<sup>1</sup> = 2 inputs: {0} and {1}. The total number of Boolean functions is:</p>
+      <div class="math-block">
+        2<sup>(2<sup>1</sup>)</sup> = 2<sup>2</sup> = 4
+      </div>
+      <p>Let us write out all 4 functions explicitly and construct their linear separating hyperplanes (which in 1D are simply single threshold points <i>w</i>&middot;<i>x</i> + <i>b</i> = 0, or <i>x</i> = -&theta;):</p>
+      <ol>
+        <li><b>Constant 0:</b> <i>f</i>(0) = 0, <i>f</i>(1) = 0 &rarr; Linear boundary: <i>w</i> = 0, <i>b</i> = -1 &rArr; 0&middot;<i>x</i> - 1 &lt; 0 for all <i>x</i>. (Linearly separable).</li>
+        <li><b>Identity:</b> <i>f</i>(0) = 0, <i>f</i>(1) = 1 &rarr; Linear boundary: 1&middot;<i>x</i> - 0.5 = 0 &rArr; <i>x</i> &gt; 0.5 gives 1, <i>x</i> &lt; 0.5 gives 0. (Linearly separable).</li>
+        <li><b>NOT / Inversion:</b> <i>f</i>(0) = 1, <i>f</i>(1) = 0 &rarr; Linear boundary: -1&middot;<i>x</i> + 0.5 = 0 &rArr; -<i>x</i> + 0.5 &gt; 0 gives 1, &lt; 0 gives 0. (Linearly separable).</li>
+        <li><b>Constant 1:</b> <i>f</i>(0) = 1, <i>f</i>(1) = 1 &rarr; Linear boundary: <i>w</i> = 0, <i>b</i> = 1 &rArr; 0&middot;<i>x</i> + 1 &gt; 0 for all <i>x</i>. (Linearly separable).</li>
+      </ol>
+      <p>In 1-dimensional space, two distinct points (0 and 1) on a line can <b>always</b> be partitioned in all 2<sup>2</sup> = 4 possible configurations by a single separating point. Non-linearly separable functions only appear when <i>n</i> &ge; 2 (such as XOR). Therefore, all <b>4</b> functions are linearly separable <b>(Option D)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 7 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 7 / 10</span>
+      <span class="q-badge">Hyperplane Geometry</span>
+    </div>
+    <div class="q-text">
+      We know from the lecture that the decision boundary learned by the perceptron is a line in R<sup>2</sup>. We also observed that it divides the entire space of R<sup>2</sup> into two regions, suppose that the input vector <b>x</b> &in; R<sup>5</sup>, then the perceptron decision boundary will divide the whole R<sup>5</sup> space into how many regions?
+    </div>
+    <div class="options-grid">
+      <div class="option-item correct">
+        <span class="opt-letter">A</span>
+        <span><b>2</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>3</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>5</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">D</span>
+        <span>4</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">E</span>
+        <span>It depends on whether the data points are linearly separable or not</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>A single perceptron defines its decision boundary as a single affine hyperplane in <i>d</i>-dimensional Euclidean space R<sup>d</sup>:</p>
+      <div class="math-block">
+        H = { <b>x</b> &in; R<sup>d</sup> : <b>w</b><sup>T</sup><b>x</b> + b = 0 }
+      </div>
+      <p>By fundamental topology and linear algebra, any (<i>d</i> - 1)-dimensional hyperplane embedded in R<sup>d</sup> separates the entire continuous space R<sup>d</sup> into exactly <b>two open half-spaces</b>:</p>
+      <div class="math-block">
+        H<sup>+</sup> = { <b>x</b> &in; R<sup>d</sup> : <b>w</b><sup>T</sup><b>x</b> + b &gt; 0 } &nbsp;&nbsp; (Positive Region)<br>
+        H<sup>-</sup> = { <b>x</b> &in; R<sup>d</sup> : <b>w</b><sup>T</sup><b>x</b> + b &lt; 0 } &nbsp;&nbsp; (Negative Region)
+      </div>
+      <p>This topological property is strictly invariant to dimension:</p>
+      <ul>
+        <li>In R<sup>1</sup>: A point (0-D hyperplane) divides the 1D line into <b>2</b> rays.</li>
+        <li>In R<sup>2</sup>: A line (1-D hyperplane) divides the 2D plane into <b>2</b> half-planes.</li>
+        <li>In R<sup>3</sup>: A plane (2-D hyperplane) divides the 3D space into <b>2</b> half-spaces.</li>
+        <li>In R<sup>5</sup>: A 4-dimensional hyperplane divides the 5D space into exactly <b>2</b> regions.</li>
+      </ul>
+      <p>Hence, the answer is unconditionally <b>2</b> <b>(Option A)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 8 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 8 / 10</span>
+      <span class="q-badge">Perceptron Algorithm Execution</span>
+    </div>
+    <div class="q-text">
+      Consider the following table, where <i>x</i><sub>1</sub> and <i>x</i><sub>2</sub> are features (packed into a single vector <b>x</b> = [<i>x</i><sub>1</sub>, <i>x</i><sub>2</sub>]<sup>T</sup>) and <i>y</i> is a label:
+      <table class="data-table">
+        <thead><tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>y</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>1</td><td>1</td><td>1</td></tr>
+        </tbody>
+      </table>
+      Suppose that the perceptron model is used to classify the data points. Suppose further that the weights <b>w</b> are initialized to <b>w</b> = [1, 1]<sup>T</sup>. The following rule is used for classification:
+      <div class="math-block">
+        y = 1 &nbsp; if <b>w</b><sup>T</sup><b>x</b> &gt; 0, &nbsp;&nbsp; 0 &nbsp; if <b>w</b><sup>T</sup><b>x</b> &le; 0
+      </div>
+      The perceptron learning algorithm is used to update the weight vector <b>w</b>. Then, how many times the weight vector <b>w</b> will get updated during the entire training process?
+    </div>
+    <div class="options-grid">
+      <div class="option-item correct">
+        <span class="opt-letter">A</span>
+        <span><b>0</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>1</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>2</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">D</span>
+        <span>3</span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">E</span>
+        <span>Not possible to decide</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown</div>
+      <p>The perceptron learning algorithm performs a weight update <b>only when an instance is misclassified</b>. Let us test all 4 training samples against the initial weight vector <b>w</b> = [1, 1]<sup>T</sup>:</p>
+      <ol>
+        <li><b>Instance 1: x = [0, 0]<sup>T</sup>, True y = 0</b>
+          <div class="math-block"><b>w</b><sup>T</sup><b>x</b> = (1)(0) + (1)(0) = 0</div>
+          According to the rule: Since <b>w</b><sup>T</sup><b>x</b> &le; 0, prediction <i>ŷ</i> = 0.
+          Matches true label <i>y</i> = 0 &rArr; <b>Correct! (No update)</b>.
+        </li>
+        <li><b>Instance 2: x = [0, 1]<sup>T</sup>, True y = 1</b>
+          <div class="math-block"><b>w</b><sup>T</sup><b>x</b> = (1)(0) + (1)(1) = 1 &gt; 0</div>
+          Prediction <i>ŷ</i> = 1. Matches true label <i>y</i> = 1 &rArr; <b>Correct! (No update)</b>.
+        </li>
+        <li><b>Instance 3: x = [1, 0]<sup>T</sup>, True y = 1</b>
+          <div class="math-block"><b>w</b><sup>T</sup><b>x</b> = (1)(1) + (1)(0) = 1 &gt; 0</div>
+          Prediction <i>ŷ</i> = 1. Matches true label <i>y</i> = 1 &rArr; <b>Correct! (No update)</b>.
+        </li>
+        <li><b>Instance 4: x = [1, 1]<sup>T</sup>, True y = 1</b>
+          <div class="math-block"><b>w</b><sup>T</sup><b>x</b> = (1)(1) + (1)(1) = 2 &gt; 0</div>
+          Prediction <i>ŷ</i> = 1. Matches true label <i>y</i> = 1 &rArr; <b>Correct! (No update)</b>.
+        </li>
+      </ol>
+      <p>Every single training sample is already perfectly classified on epoch 1! The total number of updates triggered is precisely <b>0</b> <b>(Option A)</b>.</p>
+    </div>
+  </div>
+
+  <!-- QUESTION 9 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 9 / 10</span>
+      <span class="q-badge">Non-Convergence of Bias-Free Perceptron</span>
+    </div>
+    <div class="q-text">
+      Consider the following table, where <i>x</i><sub>1</sub> and <i>x</i><sub>2</sub> are features and <i>y</i> is a label:
+      <table class="data-table">
+        <thead><tr><th>x<sub>1</sub></th><th>x<sub>2</sub></th><th>y</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>0</td><td>1</td></tr>
+          <tr><td>0</td><td>1</td><td>1</td></tr>
+          <tr><td>1</td><td>0</td><td>1</td></tr>
+          <tr><td>1</td><td>1</td><td>0</td></tr>
+        </tbody>
+      </table>
+      Assume that the elements in <b>w</b> are initialized to zero and perceptron learning algorithm is used to update the weights <b>w</b>. If the learning algorithm runs for long enough iterations, then:
+    </div>
+    <div class="options-grid">
+      <div class="option-item">
+        <span class="opt-letter">A</span>
+        <span>The algorithm converges (i.e., no further weight updates) after some iterations</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">B</span>
+        <span><b>The algorithm never converges</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">C</span>
+        <span>The classification error becomes zero eventually</span>
+      </div>
+      <div class="option-item correct">
+        <span class="opt-letter">D</span>
+        <span><b>The classification error remains greater than zero</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Deep Technical Breakdown & Proof of Infinite Cycle</div>
+      <p>This table defines the <b>NAND</b> operation. Crucially, notice the problem formulation:</p>
+      <ul>
+        <li>Weights <b>w</b> &in; R<sup>2</sup> without an explicit bias term <i>b</i> (or origin-constrained decision boundary <b>w</b><sup>T</sup><b>x</b> = 0).</li>
+        <li>Rule: <i>ŷ</i> = 1 if <b>w</b><sup>T</sup><b>x</b> &gt; 0, and <i>ŷ</i> = 0 if <b>w</b><sup>T</sup><b>x</b> &le; 0.</li>
+        <li>Standard update rule for misclassified sample (<b>x</b>, <i>y</i>):
+          <div class="math-block">
+            If y = 1, ŷ = 0: &nbsp;&nbsp; <b>w</b> &larr; <b>w</b> + <b>x</b><br>
+            If y = 0, ŷ = 1: &nbsp;&nbsp; <b>w</b> &larr; <b>w</b> - <b>x</b>
+          </div>
+        </li>
+      </ul>
+      <p><b>Fatal Obstacle at the Origin (0,0):</b></p>
+      <p>For the point <b>x</b> = [0, 0]<sup>T</sup>, the dot product is identically zero for <i>any</i> weight vector: <b>w</b><sup>T</sup>[0, 0]<sup>T</sup> = 0. Under the decision rule, since 0 &le; 0, the prediction is <b>always</b> <i>ŷ</i> = 0.</p>
+      <p>However, the true target label is <b>y = 1</b>! Therefore, [0, 0]<sup>T</sup> is <b>permanently misclassified</b>. Worse still, when an update is attempted on [0, 0]<sup>T</sup>:</p>
+      <div class="math-block"><b>w</b> &larr; <b>w</b> + [0, 0]<sup>T</sup> = <b>w</b> &nbsp;&nbsp; (Zero change!)</div>
+      <p><b>Explicit Step-by-Step Cycle Trace:</b></p>
+      <p>Start with <b>w</b><sub>0</sub> = [0, 0]<sup>T</sup>:</p>
+      <ul>
+        <li>Sample (0,0), <i>y</i>=1: <b>w</b><sup>T</sup><b>x</b> = 0 &rArr; <i>ŷ</i>=0 (Error). <b>w</b> &larr; [0,0] + [0,0] = <b>[0, 0]<sup>T</sup></b>.</li>
+        <li>Sample (0,1), <i>y</i>=1: <b>w</b><sup>T</sup><b>x</b> = 0 &rArr; <i>ŷ</i>=0 (Error). <b>w</b> &larr; [0,0] + [0,1] = <b>[0, 1]<sup>T</sup></b>.</li>
+        <li>Sample (1,0), <i>y</i>=1: <b>w</b><sup>T</sup><b>x</b> = (0)(1) + (1)(0) = 0 &rArr; <i>ŷ</i>=0 (Error). <b>w</b> &larr; [0,1] + [1,0] = <b>[1, 1]<sup>T</sup></b>.</li>
+        <li>Sample (1,1), <i>y</i>=0: <b>w</b><sup>T</sup><b>x</b> = (1)(1) + (1)(1) = 2 &gt; 0 &rArr; <i>ŷ</i>=1 (Error!). <b>w</b> &larr; [1,1] - [1,1] = <b>[0, 0]<sup>T</sup></b>.</li>
+      </ul>
+      <p>The weights have returned exactly to <b>[0, 0]<sup>T</sup></b>! The algorithm enters an <b>infinite loop</b>:</p>
+      <div class="math-block">
+        [0, 0]<sup>T</sup> &rarr; [0, 1]<sup>T</sup> &rarr; [1, 1]<sup>T</sup> &rarr; [0, 0]<sup>T</sup> &rarr; ...
+      </div>
+      <p>Therefore, <b>The algorithm never converges (Option B)</b> and <b>The classification error remains greater than zero (Option D)</b>.</p>
+    </div>
+    <div class="canvas-container">
+      <canvas id="cv-cycle" width="700" height="240"></canvas>
+      <div class="canvas-caption">Figure 9.1: Live state-transition graph illustrating the closed 4-state limit cycle.</div>
+    </div>
+  </div>
+
+  <!-- QUESTION 10 -->
+  <div class="q-card">
+    <div class="q-header">
+      <span class="q-title">Question 10 / 10</span>
+      <span class="q-badge">Hyperplane Geometry & Orthogonality</span>
+    </div>
+    <div class="q-text">
+      The statement that "In perceptron model, the weight vector <b>w</b> is always orthogonal to the linear decision boundary" is:
+    </div>
+    <div class="options-grid">
+      <div class="option-item correct">
+        <span class="opt-letter">A</span>
+        <span><b>True</b> &nbsp;<span class="tag-correct">[CORRECT ANSWER]</span></span>
+      </div>
+      <div class="option-item">
+        <span class="opt-letter">B</span>
+        <span>False</span>
+      </div>
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">Rigorous Mathematical Proof</div>
+      <p>Let the decision boundary of the perceptron be the set of all points <b>x</b> that satisfy:</p>
+      <div class="math-block">
+        S = { <b>x</b> &in; R<sup>d</sup> : <b>w</b><sup>T</sup><b>x</b> + b = 0 }
+      </div>
+      <p>To prove that the vector <b>w</b> is orthogonal to this boundary, choose any two arbitrary distinct points <b>x</b><sub>a</sub> and <b>x</b><sub>b</sub> lying on the decision boundary <i>S</i>.</p>
+      <p>Because both points belong to <i>S</i>, both must satisfy the equation:</p>
+      <div class="math-block">
+        1) &nbsp; <b>w</b><sup>T</sup><b>x</b><sub>a</sub> + b = 0<br>
+        2) &nbsp; <b>w</b><sup>T</sup><b>x</b><sub>b</sub> + b = 0
+      </div>
+      <p>Now subtract equation (2) from equation (1):</p>
+      <div class="math-block">
+        (<b>w</b><sup>T</sup><b>x</b><sub>a</sub> + b) - (<b>w</b><sup>T</sup><b>x</b><sub>b</sub> + b) = 0<br>
+        &rArr; <b>w</b><sup>T</sup><b>x</b><sub>a</sub> - <b>w</b><sup>T</sup><b>x</b><sub>b</sub> = 0<br>
+        &rArr; <b>w</b><sup>T</sup>(<b>x</b><sub>a</sub> - <b>x</b><sub>b</sub>) = 0
+      </div>
+      <p>The difference vector <b>v</b> = <b>x</b><sub>a</sub> - <b>x</b><sub>b</sub> represents an arbitrary displacement vector lying entirely <b>inside (parallel to) the decision boundary surface</b>.</p>
+      <p>Because their inner product equals zero (<b>w</b><sup>T</sup><b>v</b> = 0), the weight vector <b>w</b> is strictly perpendicular (orthogonal / normal) to every tangent direction along the decision surface. Moreover, <b>w</b> points in the direction of the positive half-space (where <b>w</b><sup>T</sup><b>x</b> + <i>b</i> &gt; 0 increases most rapidly).</p>
+      <p>Thus, the statement is unconditionally <b>True (Option A)</b>.</p>
+    </div>
+    <div class="canvas-container">
+      <canvas id="cv-ortho" width="700" height="260"></canvas>
+      <div class="canvas-caption">Figure 10.1: Vector w proven orthogonal to displacement vector (x<sub>a</sub> - x<sub>b</sub>) on the boundary.</div>
+    </div>
+  </div>
+
+  <!-- FOUNDATIONS & FIRST PRINCIPLES: MASTER GUIDE -->
+  <div class="master-guide">
+    <h2>Foundations & First Principles: Master Guide</h2>
+    
+    <h3>1. The Evolution of the Artificial Neuron</h3>
+    <p>Modern deep neural networks descend from mathematical abstractions of cortical wetware:</p>
+    <ul>
+      <li><b>McCulloch-Pitts (1943):</b> First computational model. Binary inputs, binary thresholding, unweighted excitatory inputs (+1) and veto inhibitory inputs (&infin; negative weight). Unable to learn weights from data.</li>
+      <li><b>Rosenblatt Perceptron (1958):</b> Introduced continuous real-valued weights <b>w</b> &in; R<sup>d</sup> and an automatic iterative learning rule driven by error correction.</li>
+      <li><b>Adaline / Sigmoid / ReLU:</b> Transitioned from step functions to smooth differentiable activations, unlocking backpropagation and deep hierarchical representations.</li>
+    </ul>
+
+    <h3>2. Why the Bias Term b is Essential</h3>
+    <p>A decision boundary without a bias has the equation <b>w</b><sup>T</sup><b>x</b> = 0. This restricts the separating hyperplane to pass strictly through the origin <b>0</b>. As proven in Question 9:</p>
+    <ul>
+      <li>Any point at the origin <b>x</b> = <b>0</b> yields <b>w</b><sup>T</sup><b>0</b> = 0 &le; 0 for <i>any</i> choice of weights.</li>
+      <li>If a dataset requires the origin to have label <i>y</i> = 1 (such as NAND, NOR, or inverted thresholds), a bias-free perceptron can <b>never</b> separate the data, leading to perpetual cyclic oscillation.</li>
+      <li>Introducing an adjustable scalar bias <i>b</i> allows the hyperplane to translate freely away from the origin:
+        <div class="math-block"><b>w</b><sup>T</sup><b>x</b> + b = 0 &nbsp;&iff;&nbsp; Distance to origin = |b| / ||<b>w</b>||</div>
+      </li>
+    </ul>
+
+    <h3>3. The Perceptron Convergence Theorem</h3>
+    <p>Novikoff (1962) proved that if a dataset <i>D</i> is strictly linearly separable with margin &gamma; &gt; 0 (meaning there exists an optimal unit vector <b>w</b><sup>*</sup> such that <i>y</i><sub>i</sub>(<b>w</b><sup>*T</sup><b>x</b><sub>i</sub>) &ge; &gamma; for all <i>i</i>, with ||<b>x</b><sub>i</sub>|| &le; <i>R</i>), then the Perceptron learning algorithm is guaranteed to converge in at most:</p>
+    <div class="math-block">
+      k &le; ( R / &gamma; )<sup>2</sup> &nbsp;&nbsp; updates
+    </div>
+    <p>When the dataset is not linearly separable—or when the hypothesis class cannot represent the offset due to the absence of a bias term—the premise &gamma; &gt; 0 fails, and the algorithm oscillates indefinitely without converging.</p>
+  </div>
+
+</div>
+
+<script>
+  function boot() {
+    if (typeof rough === 'undefined') {
+      setTimeout(boot, 40);
+      return;
+    }
+    startAnimations();
+  }
+
+  function startAnimations() {
+    // --- ANIMATION 1: Biological Neuron to Artificial Mapping ---
+    const cvNeuron = document.getElementById('cv-neuron');
+    const ctxN = cvNeuron.getContext('2d');
+    const rcN = rough.canvas(cvNeuron);
+
+    // --- ANIMATION 2: NAND Perceptron Update Cycle ---
+    const cvCycle = document.getElementById('cv-cycle');
+    const ctxC = cvCycle.getContext('2d');
+    const rcC = rough.canvas(cvCycle);
+
+    // --- ANIMATION 3: Weight Orthogonality ---
+    const cvOrtho = document.getElementById('cv-ortho');
+    const ctxO = cvOrtho.getContext('2d');
+    const rcO = rough.canvas(cvOrtho);
+
+    let frame = 0;
+
+    function render() {
+      frame++;
+
+      // 1. Draw Neuron Diagram
+      ctxN.clearRect(0, 0, 700, 260);
+      
+      // Dendrites (left)
+      rcN.line(60, 60, 160, 120, { stroke: '#38bdf8', strokeWidth: 2, roughness: 1.2 });
+      rcN.line(40, 130, 160, 130, { stroke: '#38bdf8', strokeWidth: 2, roughness: 1.2 });
+      rcN.line(60, 200, 160, 140, { stroke: '#38bdf8', strokeWidth: 2, roughness: 1.2 });
+
+      // Soma (Cell Body - center circle)
+      const pulse = Math.sin(frame * 0.05) * 3;
+      rcN.circle(210, 130, 80 + pulse, {
+        stroke: '#fbbf24',
+        strokeWidth: 2.5,
+        fill: 'rgba(251, 191, 36, 0.15)',
+        fillStyle: 'solid',
+        roughness: 1.5
+      });
+
+      // Axon (horizontal line)
+      rcN.line(250, 130, 520, 130, { stroke: '#34d399', strokeWidth: 4, roughness: 1 });
+      
+      // Myelin Sheaths
+      for (let x = 280; x <= 460; x += 50) {
+        rcN.rectangle(x, 120, 35, 20, {
+          stroke: '#34d399',
+          fill: 'rgba(52, 211, 153, 0.2)',
+          fillStyle: 'solid',
+          roughness: 1
+        });
+      }
+
+      // Axon Terminals / Synapses (right)
+      rcN.line(520, 130, 600, 70, { stroke: '#f43f5e', strokeWidth: 2, roughness: 1.2 });
+      rcN.line(520, 130, 620, 130, { stroke: '#f43f5e', strokeWidth: 2, roughness: 1.2 });
+      rcN.line(520, 130, 600, 190, { stroke: '#f43f5e', strokeWidth: 2, roughness: 1.2 });
+
+      // Labels
+      ctxN.font = 'bold 12px sans-serif';
+      ctxN.fillStyle = '#38bdf8';
+      ctxN.fillText('DENDRITES (Inputs x_i)', 20, 40);
+
+      ctxN.fillStyle = '#fbbf24';
+      ctxN.fillText('SOMA (Processing / Summation)', 130, 205);
+      ctxN.font = '11px monospace';
+      ctxN.fillText('Sum EPSPs & IPSPs', 165, 134);
+
+      ctxN.font = 'bold 12px sans-serif';
+      ctxN.fillStyle = '#34d399';
+      ctxN.fillText('AXON (Propagation / Output)', 305, 95);
+
+      ctxN.fillStyle = '#f43f5e';
+      ctxN.fillText('SYNAPSES (Weights w)', 550, 40);
+
+
+      // 2. Draw Perceptron NAND Cycle
+      ctxC.clearRect(0, 0, 700, 240);
+      const cycleState = Math.floor(frame / 45) % 4;
+      const states = [
+        { label: 'w = [0, 0]', x: 100, y: 120, col: '#94a3b8' },
+        { label: 'w = [0, 1]', x: 260, y: 60,  col: '#38bdf8' },
+        { label: 'w = [1, 1]', x: 440, y: 60,  col: '#fbbf24' },
+        { label: 'w = [0, 0]', x: 600, y: 120, col: '#f43f5e' }
+      ];
+
+      // Draw transition arrows
+      rcC.line(140, 105, 220, 75, { stroke: '#38bdf8', strokeWidth: 2 });
+      rcC.line(300, 60, 400, 60, { stroke: '#fbbf24', strokeWidth: 2 });
+      rcC.line(480, 75, 560, 105, { stroke: '#f43f5e', strokeWidth: 2 });
+      // Curve back
+      rcC.curve([[580, 150], [350, 210], [120, 150]], { stroke: '#e2e8f0', strokeWidth: 2, strokeLineDash: [6, 4] });
+
+      states.forEach((st, idx) => {
+        const isCurrent = (idx === cycleState);
+        rcC.rectangle(st.x - 45, st.y - 25, 90, 50, {
+          stroke: isCurrent ? '#34d399' : st.col,
+          strokeWidth: isCurrent ? 3 : 1.5,
+          fill: isCurrent ? 'rgba(52, 211, 153, 0.25)' : 'rgba(16, 31, 66, 0.6)',
+          fillStyle: 'solid',
+          roughness: 1.2
+        });
+        ctxC.font = 'bold 12px monospace';
+        ctxC.fillStyle = isCurrent ? '#34d399' : '#e2e8f0';
+        ctxC.fillText(st.label, st.x - 36, st.y + 4);
+      });
+
+      ctxC.font = '11px sans-serif';
+      ctxC.fillStyle = '#38bdf8';
+      ctxC.fillText('+ (0,1) [y=1]', 155, 75);
+      ctxC.fillStyle = '#fbbf24';
+      ctxC.fillText('+ (1,0) [y=1]', 330, 48);
+      ctxC.fillStyle = '#f43f5e';
+      ctxC.fillText('- (1,1) [y=0]', 520, 80);
+      ctxC.fillStyle = '#e2e8f0';
+      ctxC.fillText('Returns to [0,0]: INFINITE LOOP (No Convergence!)', 220, 225);
+
+
+      // 3. Draw Orthogonality Diagram
+      ctxO.clearRect(0, 0, 700, 260);
+
+      // Decision boundary line
+      rcO.line(100, 220, 550, 70, { stroke: '#38bdf8', strokeWidth: 3, roughness: 1.2 });
+      
+      // Two points on the boundary
+      rcO.circle(220, 180, 8, { stroke: '#fbbf24', fill: '#fbbf24', fillStyle: 'solid' });
+      rcO.circle(400, 120, 8, { stroke: '#fbbf24', fill: '#fbbf24', fillStyle: 'solid' });
+
+      // Displacement vector along boundary
+      rcO.line(220, 180, 400, 120, { stroke: '#fbbf24', strokeWidth: 2 });
+
+      // Midpoint & Orthogonal weight vector w
+      const midX = 310, midY = 150;
+      // Normal vector components: dx = 450, dy = -150 -> normal = (150, 450) normalized
+      const angle = Math.atan2(70 - 220, 550 - 100); // boundary angle
+      const normalAngle = angle - Math.PI / 2;
+      const wLen = 90;
+      const endX = midX + Math.cos(normalAngle) * wLen;
+      const endY = midY + Math.sin(normalAngle) * wLen;
+
+      rcO.line(midX, midY, endX, endY, { stroke: '#34d399', strokeWidth: 3, roughness: 1.2 });
+
+      // Arrow head for w
+      rcO.line(endX, endY, endX - 12, endY + 8, { stroke: '#34d399', strokeWidth: 2.5 });
+      rcO.line(endX, endY, endX - 3, endY + 14, { stroke: '#34d399', strokeWidth: 2.5 });
+
+      // Right angle indicator
+      const sq = 14;
+      const cosA = Math.cos(angle), sinA = Math.sin(angle);
+      const cosN = Math.cos(normalAngle), sinN = Math.sin(normalAngle);
+      rcO.line(midX + sq * cosA, midY + sq * sinA, midX + sq * cosA + sq * cosN, midY + sq * sinA + sq * sinN, { stroke: '#e2e8f0', strokeWidth: 1.5 });
+      rcO.line(midX + sq * cosN, midY + sq * sinN, midX + sq * cosA + sq * cosN, midY + sq * sinA + sq * sinN, { stroke: '#e2e8f0', strokeWidth: 1.5 });
+
+      // Text annotations
+      ctxO.font = 'bold 13px sans-serif';
+      ctxO.fillStyle = '#38bdf8';
+      ctxO.fillText('Decision Boundary: w^T x + b = 0', 430, 60);
+
+      ctxO.fillStyle = '#fbbf24';
+      ctxO.fillText('x_a', 210, 202);
+      ctxO.fillText('x_b', 395, 142);
+      ctxO.fillText('Displacement vector: (x_b - x_a)', 210, 160);
+
+      ctxO.fillStyle = '#34d399';
+      ctxO.fillText('Weight Vector w', endX + 8, endY - 4);
+      ctxO.font = '12px monospace';
+      ctxO.fillStyle = '#e2e8f0';
+      ctxO.fillText('w^T (x_b - x_a) = 0  [Orthogonal / 90°]', midX - 250, midY - 60);
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+  }
+
+  boot();
+</script>
+</body>
+</html>

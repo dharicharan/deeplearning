@@ -1,0 +1,62 @@
+name: Auto-update index links
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ '**.html' ]
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    # Prevent the workflow from triggering itself when it commits index.html
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Insert links into index.html
+        run: |
+          python3 - << 'PY'
+          from pathlib import Path
+          import re
+
+          # Find all HTML files in repo root except index.html
+          html_files = sorted([p.name for p in Path('.').glob('*.html') if p.name != 'index.html'])
+
+          # Build an HTML list of links
+          items = "\n".join(
+              f'    <li><a href="{name}">{name}</a></li>' for name in html_files
+          )
+          section = f'  <section id="weekly-links">\n    <h2>Weekly PA &amp; GA</h2>\n    <ul>\n{items}\n    </ul>\n  </section>'
+
+          index = Path('index.html')
+          content = index.read_text(encoding='utf-8')
+
+          if '<section id="weekly-links">' in content:
+              # Replace existing auto-generated section
+              content = re.sub(
+                  r'<section id="weekly-links">.*?</section>',
+                  section,
+                  content,
+                  flags=re.DOTALL
+              )
+          else:
+              # Insert right before </body>
+              content = content.replace('</body>', f'{section}\n</body>')
+
+          index.write_text(content, encoding='utf-8')
+          PY
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "No changes to index.html"
+          else
+            git commit -m "chore: auto-update weekly links [skip ci]"
+            git push
+          fi
